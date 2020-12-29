@@ -1,0 +1,45 @@
+/*
+	WOWL.icf
+	
+	Linker command file for the WOWL sensor.
+	
+	2020-09-22  WHF  Created.
+*/
+
+/*-Specials-*/
+// Note that APP_CODE_BASE is 0x1F000 for SoftDevice 3.0.
+define symbol __ICFEDIT_intvec_start__ = 0x1F000;
+/*-Memory Regions-*/
+define symbol __ICFEDIT_region_ROM_start__   = 0x1F000;
+define symbol __ICFEDIT_region_ROM_end__     = 0x7ffff;
+
+// This is the start of RAM for the application.  We give the rest to the
+//   SoftDevice.
+define symbol __ICFEDIT_region_RAM_start__   = 0x20008000;
+define symbol __ICFEDIT_region_RAM_end__     = 0x2000ffff;
+export symbol __ICFEDIT_region_RAM_start__;
+export symbol __ICFEDIT_region_RAM_end__;
+
+/*-Sizes-*/
+// The SoftDevice specification requires 0x600 bytes for the stack.
+define symbol __ICFEDIT_size_cstack__   = 0x1000;
+define symbol __ICFEDIT_size_heap__     = 0x200;
+
+define memory mem with size = 4G;
+define region ROM_region   = mem:[from __ICFEDIT_region_ROM_start__   to __ICFEDIT_region_ROM_end__];
+define region RAM_region   = mem:[from __ICFEDIT_region_RAM_start__   to __ICFEDIT_region_RAM_end__];
+
+define block CSTACK    with alignment = 8, size = __ICFEDIT_size_cstack__   { };
+define block HEAP      with alignment = 8, size = __ICFEDIT_size_heap__     { };
+
+initialize by copy { readwrite };
+do not initialize  { section .noinit, section shares* };
+
+keep { section .intvec };
+place at address mem:__ICFEDIT_intvec_start__ { readonly section .intvec };
+place in ROM_region   { readonly };
+place in RAM_region   { readwrite,
+                        block CSTACK,
+                        block HEAP };
+                        
+

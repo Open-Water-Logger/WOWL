@@ -1,0 +1,64 @@
+Reference for the various scattered Bluetooth events.
+
+BLE_EVT_INVALID        0x00
+BLE_EVT_BASE           0x01
+BLE_EVT_LAST           0x0F
+BLE_GAP_EVT_BASE       0x10
+BLE_GAP_EVT_LAST       0x2F
+BLE_GATTC_EVT_BASE     0x30
+BLE_GATTC_EVT_LAST     0x4F
+BLE_GATTS_EVT_BASE     0x50
+BLE_GATTS_EVT_LAST     0x6F
+BLE_L2CAP_EVT_BASE     0x70
+BLE_L2CAP_EVT_LAST     0x8F
+
+// common
+BLE_EVT_TX_COMPLETE                          0x01
+BLE_EVT_USER_MEM_REQUEST                     0x02
+BLE_EVT_USER_MEM_RELEASE                     0x03
+BLE_EVT_DATA_LENGTH_CHANGED                  0x04
+
+// gap
+BLE_GAP_EVT_CONNECTED                        0x10
+BLE_GAP_EVT_DISCONNECTED                     0x11
+BLE_GAP_EVT_CONN_PARAM_UPDATE                0x12
+BLE_GAP_EVT_SEC_PARAMS_REQUEST               0x13
+BLE_GAP_EVT_SEC_INFO_REQUEST                 0x14
+BLE_GAP_EVT_PASSKEY_DISPLAY                  0x15
+BLE_GAP_EVT_KEY_PRESSED                      0x16
+BLE_GAP_EVT_AUTH_KEY_REQUEST                 0x17
+BLE_GAP_EVT_LESC_DHKEY_REQUEST               0x18
+BLE_GAP_EVT_AUTH_STATUS                      0x19
+BLE_GAP_EVT_CONN_SEC_UPDATE                  0x1A
+BLE_GAP_EVT_TIMEOUT                          0x1B
+BLE_GAP_EVT_RSSI_CHANGED                     0x1C
+BLE_GAP_EVT_ADV_REPORT                       0x1D
+BLE_GAP_EVT_SEC_REQUEST                      0x1E
+BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST        0x1F
+BLE_GAP_EVT_SCAN_REQ_REPORT                  0x20
+
+// gattc
+BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP        0x30
+BLE_GATTC_EVT_REL_DISC_RSP              0x31
+BLE_GATTC_EVT_CHAR_DISC_RSP             0x32
+BLE_GATTC_EVT_DESC_DISC_RSP             0x33
+BLE_GATTC_EVT_ATTR_INFO_DISC_RSP        0x34         
+BLE_GATTC_EVT_CHAR_VAL_BY_UUID_READ_RSP 0x35  
+BLE_GATTC_EVT_READ_RSP                  0x36
+BLE_GATTC_EVT_CHAR_VALS_READ_RSP        0x37
+BLE_GATTC_EVT_WRITE_RSP                 0x38
+BLE_GATTC_EVT_HVX                       0x39
+BLE_GATTC_EVT_EXCHANGE_MTU_RSP          0x3A
+BLE_GATTC_EVT_TIMEOUT                   0x3B
+  
+// gatts
+BLE_GATTS_EVT_WRITE                     0x50
+BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST      0x51
+BLE_GATTS_EVT_SYS_ATTR_MISSING          0x52
+BLE_GATTS_EVT_HVC                       0x53
+BLE_GATTS_EVT_SC_CONFIRM                0x54
+BLE_GATTS_EVT_TIMEOUT                   0x55
+  
+// l2cap
+BLE_L2CAP_EVT_RX                        0x70
+
