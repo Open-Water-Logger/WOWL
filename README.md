@@ -5,4 +5,4 @@ WOWL is a project of Creare working in collaboration with the Darling Marine Cen
 
 This project is supported by NOAA via SBIR contract NA20OAR0210323.
 
-Open Image is licensed under the Apache License 2.0
+This project is licensed under the Apache License 2.0
