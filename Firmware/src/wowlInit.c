@@ -13,6 +13,7 @@
 #include <nrf_clock.h>
 #include <nrf_delay.h>
 #include <nrf_gpio.h>
+#include <nrf_nvic.h>
 #include <nrf_sdm.h>
 #include <system_nrf52.h>
 
@@ -36,6 +37,7 @@ static void initGpio(void);
 static void initI2C(void);
 
 static void i2cEventHandler(const nrf_drv_twi_evt_t *pEvent, void *pCtx);
+static void nResetCallback(uint32_t pin, nrf_gpiote_polarity_t action);
 
 
 //*******************************  Module Data  ******************************//
@@ -93,7 +95,7 @@ void wowlInit(void)
 	wowlFlashInit();
 	wowlLedInit();	
 	wowlPmInit();
-	// Note this initializes the external ADCs and the digital sensors:
+	// Note this initializes the digital sensors:
 	wowlSampleInit();
 	
 	// Setup the watchdog timer:
@@ -104,11 +106,14 @@ void wowlInit(void)
 }
 
 void wowlInitSetupGpioInterrupt(
-		uint8_t pin, fwd_gpiote_evt_handler_t pFun)
+		uint8_t pin, 
+		fwd_gpiote_evt_handler_t pFun,
+		nrf_gpiote_polarity_t polarity,
+		nrf_gpio_pin_pull_t pullDir)
 {	
-	static const nrf_drv_gpiote_in_config_t config = {
-		.sense = NRF_GPIOTE_POLARITY_TOGGLE,  // either edge
-		.pull = NRF_GPIO_PIN_PULLUP,
+	const nrf_drv_gpiote_in_config_t config = {
+		.sense = polarity,
+		.pull = pullDir,
 		.is_watcher = false,
 		.hi_accuracy = false
 	};
@@ -123,7 +128,6 @@ void wowlInitSetupGpioInterrupt(
 	// Enable the interrupt.  Void return for this function.
 	nrf_drv_gpiote_in_event_enable(pin, true);
 }
-
 
 bool wowlInitI2cXfer(uint8_t addr,
 		const void* pTx, uint8_t nTx, void* pRx, uint8_t nRx,
@@ -184,6 +188,16 @@ static void initGpio(void)
 	//  Return value indicates if already done,
 	//  which we discard as uninteresting.
 	(void) nrf_drv_gpiote_init();
+	
+	/////  Configure Inputs  /////
+	// Set the BLE_nRESET pin to be an input with a pull-up.  This is necessary
+	//  because there is no pullup on the board.  It will trigger an interrupt.
+	wowlInitSetupGpioInterrupt(
+			PIN_BLE_nRESET,
+			nResetCallback,
+			NRF_GPIOTE_POLARITY_HITOLO,
+			NRF_GPIO_PIN_PULLUP
+	);
 }
 
 static void initI2C(void)
@@ -215,5 +229,17 @@ static void i2cEventHandler(const nrf_drv_twi_evt_t *pEvent, void *pCtx)
 		assert(false);
 		wowlMainSetStatus(WOWL_STATUS_SPURIOUS_I2C_EVENT);
 	}	
+}
+
+// Callback when nReset is pulled low.
+static void nResetCallback(uint32_t pin, nrf_gpiote_polarity_t action)
+{
+#ifdef NDEBUG
+	// Reset the processor.
+	sd_nvic_SystemReset();
+#else
+	// Halt in the debugger.
+	assert(false);
+#endif
 }
 

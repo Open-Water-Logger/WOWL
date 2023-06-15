@@ -12,16 +12,8 @@
 
 //********************************  Functions  *******************************//
 // Sample the internal ADC channels.
-void wowlAdcTrigger(void);
-
-void wowlExtAdcInit(void);
-void wowlExtAdcVisit(void);
-// Trigger the main sensor readings.
-void wowlExtAdcTriggerMain(void);
-// Trigger the internal temperature sensor readings.
-void wowlExtAdcTriggerTempSense(void);
-void wowlExtAdcPowerDown(void);
-void wowlExtAdcWakeup(void);
+void wowlAdcTriggerSurface(void);
+void wowlAdcTriggerSubmerged(void);
 
 void wowlPressInit(void);
 void wowlPressVisit(void);
@@ -33,8 +25,8 @@ void wowlTempVisit(void);
 void wowlTempTrigger(void);
 
 // Submodules use to submit data for aggregation.
-void wowlSampleSubmit(sample_index_t idx, float value);
-
+void wowlSampleSubmitSubmerged(submerged_sample_index_t idx, float value);
+void wowlSampleSubmitSurface(surface_sample_index_t idx, float value);
 
 #endif /* __WOHL_SAMPLE_H__ */
 

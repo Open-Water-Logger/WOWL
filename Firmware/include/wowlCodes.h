@@ -19,7 +19,7 @@
 #define WOWL_SERVICE_UUID                                             0x3090
 
 /////  Characteristic UUIDs (16-bit).  /////
-#define WOWL_PRESS_OFFSET_UUID                                        0x3091
+#define WOWL_reserved_____UUID                                        0x3091
 #define WOWL_RECORD_COUNT_UUID                                        0x3092
 #define WOWL_MEAS_RESULTS_UUID                                        0x3093
 #define WOWL_RECORD_DWNLD_REQ_UUID                                    0x3094

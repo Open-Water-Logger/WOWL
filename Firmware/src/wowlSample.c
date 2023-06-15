@@ -9,8 +9,6 @@
 #include "wowl.h"
 #include "wowlSample.h"
 
-#include <crc.h>
-
 #include <timer/app_timer.h>
 
 
@@ -61,21 +59,40 @@
 
 /////  Sample Aggregation Flags  /////
 // Bits that are set as each channel comes in.
-#define READY_FLAG_NTC                                (1u << SI_TEMP_NTC_C)
-#define READY_FLAG_RTD                                (1u << SI_TEMP_RTD_C)
-#define READY_FLAG_SI                                  (1u << SI_TEMP_SI_C)
+#define READY_FLAG_TI                                  (1u << SI_TEMP_TI_C)
 #define READY_FLAG_PRESS                              (1u << SI_PRESS_MBAR)
-#define READY_FLAG_PRESS_T                          (1u << SI_PRESS_TEMP_C)
-#define READY_FLAG_INT_NTC                        (1u << SI_TEMP_INT_NTC_C)
-#define READY_FLAG_INT_RTD                        (1u << SI_TEMP_INT_RTD_C)
 
 // Masks for each set of measurements.
-#define TRIG1_READY   (READY_FLAG_NTC | READY_FLAG_RTD                    \
-		| READY_FLAG_PRESS | READY_FLAG_PRESS_T)
-#define TRIG2_READY (READY_FLAG_INT_NTC | READY_FLAG_INT_RTD | READY_FLAG_SI)
+#define TRIG1_READY                                      (READY_FLAG_PRESS)
+#define TRIG2_READY                                         (READY_FLAG_TI)
+
+
+static const float MIN_SENSOR[] = {
+	1.5f,                                 // SI_BATTERY_VOLTAGE,  
+	-5.0f,                                // SI_TEMP_TI_C,
+	0.0f,                                 // SI_PRESS_MBAR,
+}, MAX_SENSOR[] = {                       
+	3.05f,                                // SI_BATTERY_VOLTAGE,
+	35.95f,                               // SI_TEMP_TI_C,
+	32767.0f,                             // SI_PRESS_MBAR,
+};                                        
+static_assert(_countof(MIN_SENSOR) == _countof(MAX_SENSOR), "Inconsistent");
+static_assert(_countof(MIN_SENSOR) == N_SI, "Inconsistent");
+
+
+//*********************************  Macros  *********************************//
+// Binds a variable between a low and high point:
+#define BIND(x, lo, hi) ((x) = (x) < (lo) ? (lo) : ((x) > (hi) ? (hi) : (x)))
+
 
 
 //*******************************  Module Data  ******************************//
+/**
+  * Uncompressed sensor values.
+  */
+static SURFACE_SAMPLE surfaceSample;
+
+// TODO: are there optimizations here?
 static enum {
 	SS_SLEEP,
 	SS_WAKEUP,
@@ -98,17 +115,18 @@ APP_TIMER_DEF(limpTimer);
 //***********************  Local Function Declarations  **********************//
 static void checkSampleEvents(void);
 static void finalizeSample(void);
+static void gatherSurfaceSample(void);
 static void limpTimerCallback(void * pUnused);
 static void triggerAppTimerCallback(void *pUnused);
 static void wakeupAppTimerCallback(void *pUnused);
 
 //****************************  Global Functions  ****************************//
 const SAMPLE* wowlSampleGet(void) { return &sample; }
+const SURFACE_SAMPLE* wowlSampleGetSurface(void) { return &surfaceSample; }
 
 void wowlSampleInit(void)
 {
 	// Initialize sub-modules:
-	wowlExtAdcInit();
 	wowlPressInit();
 	wowlTempInit();
 	
@@ -138,10 +156,16 @@ void wowlSampleInit(void)
 }
 
 // Submodules use to submit data for aggregation.
-void wowlSampleSubmit(sample_index_t idx, float value)
+void wowlSampleSubmitSubmerged(submerged_sample_index_t idx, float value)
 {
 	readyFlags |= 1u << idx;
-	sample.values[idx] = value;
+	// Store in the raw sample buffer:
+	surfaceSample.submerged[idx] = value;
+}
+void wowlSampleSubmitSurface(surface_sample_index_t idx, float value)
+{
+	// Store in the raw sample buffer:
+	surfaceSample.surface[idx] = value;
 }
 
 void wowlSampleVisit(void)
@@ -150,15 +174,13 @@ void wowlSampleVisit(void)
 	const wowl_state_t state = wowlSmGetState();
 	
 	// Visit child modules:
-	wowlExtAdcVisit();
 	wowlPressVisit();
 	wowlTempVisit();	
 	
 	if (state == STATE_UNDER_SAMPLE || state == STATE_SURFACE_SAMPLE) {
 		if (prevState != state) {
-			// Just started.  Wake up the external ADC.
+			// Just started.  Start the wakeup timer.
 			assert(sampleState == SS_SLEEP);
-			wowlExtAdcWakeup();
 			sampleState = SS_WAKEUP;
 			wakeup = false;
 			const uint32_t err = app_timer_start(
@@ -168,20 +190,26 @@ void wowlSampleVisit(void)
 					NULL                               // callback context
 			);			
 			assert(err == NRF_SUCCESS);
-			// Acquire internal ADC measurements.
-			wowlAdcTrigger();
+			// Acquire internal ADC measurements.  This is synchronous.
+			if (state == STATE_UNDER_SAMPLE) {
+				wowlAdcTriggerSubmerged();
+			} else {
+				wowlAdcTriggerSurface();
+			}
 						
 		} else {
 			// We have been in the state.  Perform tasks as per the local
 			//  state machine.
 			switch (sampleState) {
+				case SS_SLEEP:
+				// NOP.
+				break;
+				
 				case SS_WAKEUP:
 				if (wakeup) {
 					// Start conversions.
 					sampleState = SS_TRIG1;
 					readyFlags = 0u;
-					// Trigger the main set of external ADC values:
-					wowlExtAdcTriggerMain();
 					// Trigger the pressure sensor:
 					wowlPressTrigger();
 				} else {
@@ -193,8 +221,6 @@ void wowlSampleVisit(void)
 				if (readyFlags == TRIG1_READY) {
 					sampleState = SS_TRIG2;
 					readyFlags = 0u;
-					// Trigger the second set of external ADC values:
-					wowlExtAdcTriggerTempSense();
 					// Trigger the temperature sensor.
 					wowlTempTrigger();
 				} else {
@@ -209,13 +235,10 @@ void wowlSampleVisit(void)
 					finalizeSample();
 					// Return to sleep:					
 					sampleState = SS_SLEEP;
-					// Enter low power state:
-					wowlExtAdcPowerDown();
 					// Set event.
 					wowlSmSetEvent(EVENT_SAMPLE_READY);
 					if (state == STATE_SURFACE_SAMPLE) {
-						// Update the Bluetooth data frame.
-						wowlServiceTransmitResults(&sample);
+						gatherSurfaceSample();
 					} else {
 						// Do not.
 					}
@@ -252,9 +275,9 @@ void wowlSampleVisit(void)
 			limpSample = false;
 			
 			// Sample the internal ADC.  This is synchronous.
-			wowlAdcTrigger();
+			wowlAdcTriggerSubmerged();
 			
-			if (sample.values[SI_BATTERY_VOLTAGE] > BATT_VOLT_THRESH_CHARGED) {
+			if (surfaceSample.submerged[SI_BATTERY_VOLTAGE] > BATT_VOLT_THRESH_CHARGED) {
 				// Leave the limping state.
 				wowlSmSetEvent(EVENT_BATTERY_CHARGED);
 			} else {
@@ -280,7 +303,7 @@ void wowlSampleVisit(void)
 //***********************  Local Function Definitions  ***********************//
 static void checkSampleEvents(void)
 {
-	const float press_mbar = sample.values[SI_PRESS_MBAR];
+	const float press_mbar = surfaceSample.submerged[SI_PRESS_MBAR];
 	const wowl_state_t state = wowlSmGetState();
 	
 	if (state == STATE_SURFACE_SAMPLE && press_mbar > PRESS_THRESH_UNDER_MBAR) {
@@ -295,7 +318,7 @@ static void checkSampleEvents(void)
 	}
 	
 	// Check for low battery condition.
-	if (sample.values[SI_BATTERY_VOLTAGE] < BATT_VOLT_THRESH_LIMP) {
+	if (surfaceSample.submerged[SI_BATTERY_VOLTAGE] < BATT_VOLT_THRESH_LIMP) {
 		// The battery is critical.
 		// Clear all events:
 		wowlSmClearEvents(UINT32_MAX);		
@@ -308,15 +331,25 @@ static void checkSampleEvents(void)
 
 static void finalizeSample(void)
 {
+	for (size_t iVal = 0u; iVal < _countof(surfaceSample.submerged); ++iVal) {
+		BIND(surfaceSample.submerged[iVal], MIN_SENSOR[iVal], MAX_SENSOR[iVal]);
+	}
+	// Pack the sample into fixed point encodings.
+	//  Note the 0.5 before the cast is for rounding.
+	sample.packed
+			= (uint32_t) (surfaceSample.submerged[SI_PRESS_MBAR] + 0.5f) << 17
+			| (uint32_t) ((surfaceSample.submerged[SI_TEMP_TI_C]+5.0f)*100.0f + 0.5f) << 5
+			| (uint32_t) ((surfaceSample.submerged[SI_BATTERY_VOLTAGE]-1.5f)*20.0f + 0.5f);
+}
+
+static void gatherSurfaceSample(void)
+{
 	// Increment count:
-	++sample.count;
+	++surfaceSample.count;
 	// Record status bits:
-	sample.status = wowlMainGetStatus();
-	// Compute the CRC of the sample, excluding the CRC field itself:
-	sample.crc = crc32(
-			(const uint8_t *) &sample,
-			sizeof(SAMPLE) - sizeof(sample.crc)
-	);
+	surfaceSample.status = wowlMainGetStatus();
+	// Update the Bluetooth data frame.
+	wowlServiceTransmitResults(&surfaceSample);
 }
 
 static void limpTimerCallback(void * pUnused)

@@ -7,11 +7,12 @@
 */
 
 #include "wowl.h"
+#include "wowlSample.h"
 
 #include <ads1120.h>
 #include <byteswap.h>
 #include <ms5837-30ba.h>
-#include <si705x.h>
+#include <tmp117.h>
 #include <spi_flash.h>
 #include <stdio.h>
 #include <timer.h>
@@ -56,19 +57,16 @@ typedef struct {
 //***********************  Local Function Declarations  **********************//
 static bool testAdc(void);
 static bool testAppTimer(void);
-static bool testBme280(void);
-static bool testConf(void);
 static bool testFlash(void);
 static bool testGpioLeds(void);
 static bool testGpioTps(void);
 static bool testPress(void);
+static bool testReset(void);
 static bool testSample(void);
 static bool testSystemOff(void);
 static bool testPwm(void);
+static bool testTempExternal(void);
 static bool testTempInternal(void);
-static bool testTempNtc(void);
-static bool testTempRtd(void);
-static bool testTempSi7501(void);
 static bool testTimer(void);
 
 
@@ -78,21 +76,18 @@ void wowlTests(void)
 	static const char *resultStr[] = { "FAILED\n", "PASSED\n" };
 	
 	TEST tests[] = {
-//		{ testAdc, "ADC",                    },
+		{ testAdc, "ADC",                    },
 //		{ testAppTimer, "AppTimer",          },
-//		{ testBme280, "BME280"               },
-//		{ testConf, "Conf",                  },
 //		{ testFlash, "Flash",                },
 //		{ testGpioLeds, "GPIO LEDs",         },
-		{ testGpioTps,  "GPIO TPs",          },
+//		{ testGpioTps,  "GPIO TPs",          },
+//		{ testReset, "Reset"                 },
 //		{ testSample, "Sample",              },
 //		{ testSystemOff, "System OFF"        },
 //		{ testPress, "PRESSURE"              },
 //		{ testPwm, "PWM",                    },
-//		{ testTempInternal, "TEMP",          },
-//		{ testTempNtc, "TEMP NTC",           },
-//		{ testTempRtd, "TEMP RTD",           },
-//		{ testTempSi7501, "TEMP Si",         },
+//		{ testTempExternal, "TEMP",          },
+//		{ testTempInternal, "Temp CPU",      },
 //		{ testTimer, "Timer"                 },
 	};
 	int i;	
@@ -114,37 +109,31 @@ void wowlTests(void)
 }
 
 //****************************  Test Definitions  ****************************//
-#if 0
 static bool testAdc(void)
 {
 	static const char* CHAN_DESC[] = {
 		"Vchg",
 		"Ichg",
-		"Vpdc",
-		"Vbat",
-		"Tcpu"
+		"Tcpu",
 	};
+	const SURFACE_SAMPLE* const pSurf = wowlSampleGetSurface();
 
 	wowlAdcInit();
-	const INT_ADC* const pAdc = wowlAdcGet();
-	uint32_t prevCount = 0;
 	
 	for (;;) {
-		IDLE();
-		wowlAdcVisit();
+		// Trigger surface measurements:
+		wowlAdcTriggerSurface();
 		
-		if (pAdc->count != prevCount) {
-			prevCount = pAdc->count;
-			for (int iChan = 0; iChan < _countof(CHAN_DESC); ++iChan) {
-				printf("%s=%.3f, ", CHAN_DESC[iChan], pAdc->measurements[iChan]);
-			}
-			puts("");
-		} else {
-			// Wait for sample
+		// Display results:
+		// Battery voltage:
+		printf("Vbat=%7.3f\n", pSurf->submerged[SI_BATTERY_VOLTAGE]); 
+		for (int iChan = 0; iChan < _countof(CHAN_DESC); ++iChan) {
+			printf("%s=%7.3f\n", CHAN_DESC[iChan], pSurf->surface[iChan]);
 		}
+		puts("");
+		WAIT_USEC(1'000'000);
 	}
 }
-#endif
 
 static void testAppTimerCallback(void *pContext)
 {
@@ -187,74 +176,9 @@ static bool testAppTimer(void)
 	return true;
 }
 
-#if 0
-static bool testBme280(void)
-{
-	bool result;
-	
-	wowlBme280_Init();
-
-	result = wowlMainGetStatus() & WOWL_STATUS_HUMIDITY_INIT_FAIL ? false : true;
-	
-	for (int iMeas = 0; result && iMeas < 1000; ++iMeas) {
-		wowlBme280_Read();
-		
-		result = wowlMainGetStatus() & WOWL_STATUS_HUMIDITY_ERROR ? false : true;
-		
-		if (result) {
-			const WOWL_BME280 *pS = wowlBme280_Get();
-			printf(
-					"%5.1f °C  %8.0f Pa %4.1f%%RH\n",
-					pS->temp_C,
-					pS->press_Pa,
-					pS->rel_hum_pc
-			);
-		} else {
-			// Failed.
-		}
-	}
-	
-	return result;
-}
-#endif
-
-#if 0
-static bool testConf(void)
-{
-	static const char TEST_ID[] = "OAE-1234";
-	bool result = wowlConfInit();
-
-	if (result) {
-		// Activate the soft device.  This is necessary for most APIs to 
-		//  function.
-		wowlBleInit();
-
-		result = wowlConfSetId(TEST_ID);
-	} else {
-		// Failed.
-	}
-	
-	if (result) {
-		// Call the visitor, as this does the actual write:
-		wowlConfVisit();
-		
-		const char* pId = wowlConfGetIdFlash();
-		
-		int cmp = strcmp(TEST_ID, pId);
-		
-		if (cmp != 0) {
-			result = false;
-		} else {
-			// Compare ok.
-		}
-	} else {
-		// Failed.
-	}
-	
-	return result;
-}
-#endif
-
+// The datasheet specifies xx23xx, but we consistently get xx28xx.
+//#define MX25V1635F_PROD_ID                                      0x001523C2u
+#define MX25V1635F_PROD_ID                                      0x001528C2u
 static bool testFlash(void)
 {
 	uint8_t pageData[256];
@@ -263,6 +187,14 @@ static bool testFlash(void)
 	bool result = true;
 	
 	wowlFlashInit();
+
+	uint32_t prodId;
+	do {
+		// Check product ID:
+		prodId = spiFlashGetProductID();
+		
+		WAIT_USEC(100'000u);  // 100 msec
+	} while (prodId != MX25V1635F_PROD_ID);
 	
 	// Erase the 4k sector.
 	err = spiFlashSectorErase(0u);
@@ -529,41 +461,49 @@ static bool testPress(void)
 	
 	return ok;
 }
+
+static bool testReset(void)
+{
+	while (nrf_gpio_pin_read(PIN_BLE_nRESET)) {
+		// Wait for pin to go low (use magnet)
+	}
+	
+	return true;
+}
+
 static void printSample(void)
 {
 	const SAMPLE* const pS = wowlSampleGet();
 	
+#if 0
 	printf(
 			"\n#%d\n\t"
-			"V_chg    = %4.2f\n\t"
-			"I_chg    = %5.3f\n\t"
-			"V_pdc    = %6.2f\n\t"
 			"V_batt   = %6.2f\n\t"
 			"T_cpu    = %6.2f\n\t"
-			"T_ntc    = %6.2f\n\t"
-			"T_rtd    = %6.2f\n\t"
-			"T_si     = %6.2f\n\t"
+			"T_ti     = %6.2f\n\t"
 			"P        = %6.2f\n\t"
 			"T_press  = %6.2f\n\t"
-			"T_ntcAdc = %6.2f\n\t"
-			"T_rtdAdc = %6.2f\n\t"
 			"\n",
 			pS->count,
-			pS->values[SI_VCHG],
-			pS->values[SI_ICHG],
-			pS->values[SI_PDC],
-			pS->values[SI_BATTERY_VOLTAGE],
-			pS->values[SI_CPU_TEMP],
-			pS->values[SI_TEMP_NTC_C],
-			pS->values[SI_TEMP_RTD_C],
-			pS->values[SI_TEMP_SI_C],
-			pS->values[SI_PRESS_MBAR],
-			pS->values[SI_PRESS_TEMP_C],
-			pS->values[SI_TEMP_INT_NTC_C],
-			pS->values[SI_TEMP_INT_RTD_C]
+			(float)pS->values[SI_BATTERY_VOLTAGE],
+			(float)pS->values[SI_CPU_TEMP],
+			(float)pS->values[SI_TEMP_TI_C],
+			(float)pS->values[SI_PRESS_MBAR],
+			(float)pS->values[SI_PRESS_TEMP_C]
 	);
+#else
+	printf(
+			"\n\n"
+			"P      = %6d mbar\n"
+			"T      = %6.2f °C\n"
+			"V_batt = %6.2f volts\n",
+			pS->packed >> 17,
+			(float) (pS->packed >> 5 & 0xFFF) / 100.0f - 5.0f,
+			(float) (pS->packed & 0x1F) / 20.0f + 1.5f
+	);
+
+#endif
 }			
-			
 static bool testSample(void)
 {
 	bool result = true;
@@ -684,6 +624,107 @@ static bool testPwm(void)
 	for (;;) ;
 }
 
+static bool readRegister(uint8_t reg, uint16_t *pVal)
+{
+	bool ok = wowlInitI2cXfer(
+			TMP117_I2C_ADDR, &reg, sizeof(reg), pVal, sizeof(*pVal), i2cCallback
+	);
+
+	if (ok) {
+		ok = waitI2cDone();
+	} else {
+		// Already failed so do not wait.
+	}
+	
+	// Swap the byte order, since the register is returned MSB.
+	*pVal = htons(*pVal);
+
+	return ok;
+}
+static bool writeRegister(uint8_t reg, uint16_t value)
+{
+	uint8_t cmd[] = {
+		reg,
+		(uint8_t) (value >> 8),  // value MSB
+		(uint8_t) value          // value LSB
+	};
+	
+	bool ok = wowlInitI2cXfer(
+			TMP117_I2C_ADDR, cmd, sizeof(cmd), NULL, 0, i2cCallback
+	);
+
+	if (ok) {
+		ok = waitI2cDone();
+	}
+
+	return ok;
+}
+static bool testTempExternal(void)
+{
+	// Reset the temperature sensor:
+	bool ok = writeRegister(TMP117_REG_CONFIG, TMP117_CONFIG_RESET);
+	uint16_t  part_id;
+	
+	if (ok) {
+		// Wait for the reset.  The datasheet specifies a max time of 2 msec.
+		WAIT_USEC(2000);  // 2 msec
+		
+		// Read device ID.
+		ok = readRegister(TMP117_REG_DEVICE_ID,	&part_id);
+	} else {
+		// Already failed.
+	}
+	
+	// Read device ID.
+	ok = readRegister(TMP117_REG_DEVICE_ID,	&part_id);
+	if (ok) {
+		if (part_id != TMP117_DEV_ID) {
+			ok = false;
+		} else {
+			// Part matches.
+		}
+	} else {
+		// Already failed.
+	}
+	// Configure the tAlert pin as an input with a pullup.
+	nrf_gpio_cfg_input(
+			PIN_T_ALERT,
+			NRF_GPIO_PIN_PULLUP
+	);
+	
+	while (ok) {
+#define CONFIG_REG_SETTING                                                \
+		( TMP117_CONFIG_CONV_15_5_MSEC /* not applicable in one-shot */   \
+		/* 8 averages to achieve accuracy target: */                      \
+		| TMP117_CONFIG_AVG_8                                             \
+		| TMP117_CONFIG_POL_ACTIVE_LO  /* active low alert pin  */       \
+		| TMP117_CONFIG_ALERT_PIN_DRDY)/* alert-pin is data-ready */
+		
+		// Trigger a one-shot conversion by writing to the configuration register.
+		ok = writeRegister(
+				TMP117_REG_CONFIG,
+				TMP117_CONFIG_MOD_ONESHOT | CONFIG_REG_SETTING
+		);
+		
+		// Poll the tAlert pin.
+		while (nrf_gpio_pin_read(PIN_T_ALERT)) {
+			// Wait for it to go low
+		}
+		
+		// Read the temperature register:
+		uint16_t temp_degC_Q7;
+		ok = readRegister(
+				TMP117_REG_TEMP_RESULT,
+				&temp_degC_Q7
+		);
+		if (ok) {
+			printf("%6.2f\n", TMP117_CONVERT_CELSIUS(temp_degC_Q7));
+		}
+	}
+	
+	return ok;
+}
+
 static bool testTempInternal(void)
 {
 	for (;;) {
@@ -706,218 +747,6 @@ static bool testTempInternal(void)
 		// Print:
 		printf("%.2f\n", cpuTemp_C);
 	}
-}
-static bool testTempNtc(void)
-{
-	bool ok = true;
-	const ads1120_gain_t gainChoice = ADS1120_GAIN_1;
-	const float 
-		gain = (float) (1 << gainChoice), // gain in powers of two
-		R_ref_rtd = 12e3f;   // 12 kohms
-		
-	// Call the external ADC initialization:
-	wowlExtAdcInit();		
-	
-	// Initialize the device:
-	ads1120_init(WOWL_ADS1120_INST_NTC);
-	
-	// Setup the gain and other features.
-	// Set the multiplexer for conversions.
-	ads1120_set_MUX(WOWL_ADS1120_INST_NTC, ADS1120_MUX_AIN1_AIN2);
-
-	// Set the gain.
-	ads1120_set_GAIN(WOWL_ADS1120_INST_NTC, gainChoice);
-
-	// Set the data rate and operating mode.  We'll use the lowest data
-	//  rate in normal mode to get the highest SNR.
-	ads1120_set_DR(WOWL_ADS1120_INST_NTC, ADS1120_MODE_NORMAL, ADS1120_DR_20);
-
-	// Setup excitation currents and output pins.
-	ads1120_set_IEXEC(
-			WOWL_ADS1120_INST_NTC,
-			ADS1120_IEXEC_UA_50, 
-			ADS1120_IMUX_AIN0,    // current out on AIN0/REFP1
-			ADS1120_IMUX_NONE     // no second current
-	); 
-
-	// Set the voltage reference used for conversions.  We use the 
-	//  ratiometric reference created by the current source and the reference
-	//  resistor.
-	ads1120_set_REF(WOWL_ADS1120_INST_NTC, ADS1120_REF_REFP0_REFN0);
-
-	while (ok) {
-		// Turn off the internal temperature sensor:
-		ads1120_set_temperature_mode(WOWL_ADS1120_INST_NTC, false);
-		
-		// Trigger a conversion.
-		ads1120_trigger_single_conversion(WOWL_ADS1120_INST_NTC);
-		
-		// Read nDRDY.  This would normally be implemented via an interrupt.
-		while (nrf_gpio_pin_read(PIN_NTC_DRDY)) {
-			// Wait
-		}
-		
-		// Read the output.
-		const int16_t raw = ads1120_retrieve_sample(WOWL_ADS1120_INST_NTC);
-				
-		// Convert to a resistance.
-		const float R = (float) raw * (R_ref_rtd / gain / (float) (1 << 15));
-
-		printf("T = %6d => %7.1f ohms\n", raw, R);		
-
-		// Turn ON the internal temperature sensor:
-		ads1120_set_temperature_mode(WOWL_ADS1120_INST_NTC, true);
-		
-		// Trigger a conversion.
-		ads1120_trigger_single_conversion(WOWL_ADS1120_INST_NTC);
-		
-		// Read nDRDY.  This would normally be implemented via an interrupt.
-		while (nrf_gpio_pin_read(PIN_NTC_DRDY)) {
-			// Wait
-		}
-		
-		// Read the output.
-		const int16_t rawT = ads1120_retrieve_sample(WOWL_ADS1120_INST_NTC);
-		
-		// Convert to a temperature.
-		const float T = ADS1120_TEMP_SENSOR_CONVERT(rawT);
-
-		printf("T = %6d => % 7.3f °C\n", rawT, T);
-
-		// Simulate sleep.
-		ads1120_powerdown(WOWL_ADS1120_INST_NTC);
-		
-		WAIT_USEC(1000000u);
-
-		// Wakeup by triggering a conversion.
-		ads1120_trigger_single_conversion(WOWL_ADS1120_INST_NTC);
-		// Wait for the filters to settle.  At room temperature takes about
-		//  11 msec to rise.  We'll be about 4 times that resistance near
-		//  freezing, so let's go with 50.
-		WAIT_USEC(50'000u); 
-	}
-	
-	return ok;
-}
-
-static bool testTempRtd(void)
-{
-	bool ok = true;
-	const ads1120_gain_t gainChoice = ADS1120_GAIN_64;
-	const float 
-		gain = (float) (1 << gainChoice), // gain in powers of two
-		R_ref_rtd = 12e3f;   // 12 kohms
-		
-	// Call the external ADC initialization:
-	wowlExtAdcInit();		
-	
-	// Initialize the device:
-	ads1120_init(WOWL_ADS1120_INST_RTD);
-	
-	// Setup the gain and other features.
-	// Set the multiplexer for conversions.
-	ads1120_set_MUX(WOWL_ADS1120_INST_RTD, ADS1120_MUX_AIN1_AIN2);
-
-	// Set the gain.
-	ads1120_set_GAIN(WOWL_ADS1120_INST_RTD, gainChoice);
-
-	// Set the data rate and operating mode.  We'll use the lowest data
-	//  rate in normal mode to get the highest SNR.
-	ads1120_set_DR(WOWL_ADS1120_INST_RTD, ADS1120_MODE_NORMAL, ADS1120_DR_20);
-
-	// Setup excitation currents and output pins.
-	ads1120_set_IEXEC(
-			WOWL_ADS1120_INST_RTD,
-			ADS1120_IEXEC_UA_50, 
-			ADS1120_IMUX_AIN0,    // current out on AIN0/REFP1
-			ADS1120_IMUX_NONE     // no second current
-	); 
-
-	// Set the voltage reference used for conversions.  We use the 
-	//  ratiometric reference created by the current source and the reference
-	//  resistor.
-	ads1120_set_REF(WOWL_ADS1120_INST_RTD, ADS1120_REF_REFP0_REFN0);
-
-	while (ok) {
-		// Trigger a conversion.
-		ads1120_trigger_single_conversion(WOWL_ADS1120_INST_RTD);
-		
-		// Read nDRDY.  This would normally be implemented via an interrupt.
-		while (nrf_gpio_pin_read(PIN_RTD_DRDY)) {
-			// Wait
-		}
-		
-		// Read the output.
-		const int16_t raw = ads1120_retrieve_sample(WOWL_ADS1120_INST_RTD);
-
-		// Convert to a resistance.
-		const float R = (float) raw * (R_ref_rtd / gain / (float) (1 << 15));
-
-		printf("T = %6d => %7.4f ohms\n", raw, R);
-		
-		// Simulate sleep.
-		ads1120_powerdown(WOWL_ADS1120_INST_RTD);
-		
-		WAIT_USEC(1000000u);
-
-		// Wakeup by triggering a conversion.
-		ads1120_trigger_single_conversion(WOWL_ADS1120_INST_RTD);
-		// Wait for the filters to settle.
-		// 10 msec sufficient.  1 msec insufficient. 5 ok.  2 ok.  1.5 bad.
-		// Let's go with 5.
-		WAIT_USEC(5000u); 
-	}
-	
-	return ok;
-}
-static bool testTempSi7501(void)
-{
-	bool ok;
-	uint8_t cmd, part_id;
-	uint16_t cmd2;
-	uint16_t adcRes;
-	
-	// Reset the temperature sensor:
-	cmd = SI705X_CMD_RESET;
-	ok = wowlInitI2cXfer(SI705X_I2C_ADDR, &cmd, 1, NULL, 0, i2cCallback);
-
-	if (ok) {
-		ok = waitI2cDone();
-	}
-	
-	// Wait for the reset.  The datasheet specifies a maximum time of 15 msec.
-	WAIT_USEC(15000);  // 15 msec
-	
-	if (ok) {
-		// Read device ID.
-		cmd2 = SI705X_CMD2_READ_ID_2;
-		ok = wowlInitI2cXfer(SI705X_I2C_ADDR, &cmd2, sizeof(cmd2),
-				&part_id, sizeof(part_id), i2cCallback);
-	}
-		
-	if (ok) {
-		ok = waitI2cDone();
-	}
-	
-	if (ok) {
-		printf("\nID = %04x\n", part_id);
-		assert(part_id == SI7051_ID_CODE);		
-	}
-	// Enter loop, converting and reading samples:
-	while (ok) {
-		// Convert Temperature, stretching the clock.  This is convenient,
-		//  but ties up the bus for 7 msec.
-		cmd = SI705X_CMD_MEAS_TEMP_HOLD;
-		ok = wowlInitI2cXfer(SI705X_I2C_ADDR, &cmd, 1,
-				&adcRes, 2, i2cCallback);
-		assert(ok);
-		ok = waitI2cDone();
-		assert(ok);
-		const float T_degC = SI705X_CONVERT_CELSIUS(adcRes);
-		printf("T = 0x%06x => %6.3f °C\n", adcRes, T_degC);
-	}
-	
-	return ok;
 }
 
 static void timerCallback(void *pUser)

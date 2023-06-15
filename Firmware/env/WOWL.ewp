@@ -66,7 +66,7 @@
                 </option>
                 <option>
                     <name>OGLastSavedByProductVersion</name>
-                    <state>8.32.2.19370</state>
+                    <state>8.50.9.33458</state>
                 </option>
                 <option>
                     <name>GeneralEnableMisra</name>
@@ -116,7 +116,7 @@
                 </option>
                 <option>
                     <name>GBECoreSlave</name>
-                    <version>27</version>
+                    <version>28</version>
                     <state>39</state>
                 </option>
                 <option>
@@ -133,7 +133,7 @@
                 </option>
                 <option>
                     <name>CoreVariant</name>
-                    <version>27</version>
+                    <version>28</version>
                     <state>39</state>
                 </option>
                 <option>
@@ -156,7 +156,7 @@
                 </option>
                 <option>
                     <name>GFPUCoreSlave2</name>
-                    <version>27</version>
+                    <version>28</version>
                     <state>39</state>
                 </option>
                 <option>
@@ -215,7 +215,7 @@
             <name>ICCARM</name>
             <archiveVersion>2</archiveVersion>
             <data>
-                <version>35</version>
+                <version>36</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -358,31 +358,31 @@
                     <state>$PROJ_DIR$\..\include</state>
                     <state>$PROJ_DIR$\..\..\Common\include</state>
                     <state>$PROJ_DIR$\..\..\..\..\Shared\include</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\include</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\ble\ble_advertising</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\ble\common</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\ble\ble_services</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\ble\peer_manager</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\device</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\clock</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\common</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\config</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\delay</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\hal</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\fds</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\fstorage</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\experimental_section_vars</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\log</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\log\src</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\timer</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\util</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\softdevice\common\softdevice_handler</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\softdevice\s132\headers</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\toolchain</state>
-                    <state>$_WHF_DATA_$\CPP_Util</state>
+                    <state>W:\CPP_Util\DSPLib\include</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\ble\ble_advertising</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\ble\common</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\ble\ble_services</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\ble\peer_manager</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\device</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\clock</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\common</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\config</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\delay</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\hal</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\fds</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\fstorage</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\experimental_section_vars</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\log</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\log\src</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\timer</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\util</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\softdevice\common\softdevice_handler</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\softdevice\s132\headers</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\toolchain</state>
+                    <state>W:\CPP_Util</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -504,13 +504,17 @@
                     <name>OICompilerExtraOption</name>
                     <state>1</state>
                 </option>
+                <option>
+                    <name>CCStackProtection</name>
+                    <state>0</state>
+                </option>
             </data>
         </settings>
         <settings>
             <name>AARM</name>
             <archiveVersion>2</archiveVersion>
             <data>
-                <version>10</version>
+                <version>11</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -666,6 +670,10 @@
                     <name>AsmNoLiteralPool</name>
                     <state>0</state>
                 </option>
+                <option>
+                    <name>PreInclude</name>
+                    <state></state>
+                </option>
             </data>
         </settings>
         <settings>
@@ -724,7 +732,7 @@
             <name>ILINK</name>
             <archiveVersion>0</archiveVersion>
             <data>
-                <version>22</version>
+                <version>23</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -1044,6 +1052,22 @@
                     <name>OILinkExtraOption</name>
                     <state>1</state>
                 </option>
+                <option>
+                    <name>IlinkRawBinaryFile2</name>
+                    <state></state>
+                </option>
+                <option>
+                    <name>IlinkRawBinarySymbol2</name>
+                    <state></state>
+                </option>
+                <option>
+                    <name>IlinkRawBinarySegment2</name>
+                    <state></state>
+                </option>
+                <option>
+                    <name>IlinkRawBinaryAlign2</name>
+                    <state></state>
+                </option>
             </data>
         </settings>
         <settings>
@@ -1138,7 +1162,7 @@
                 </option>
                 <option>
                     <name>OGLastSavedByProductVersion</name>
-                    <state>8.32.2.19370</state>
+                    <state>8.50.9.33458</state>
                 </option>
                 <option>
                     <name>GeneralEnableMisra</name>
@@ -1188,7 +1212,7 @@
                 </option>
                 <option>
                     <name>GBECoreSlave</name>
-                    <version>27</version>
+                    <version>28</version>
                     <state>39</state>
                 </option>
                 <option>
@@ -1197,7 +1221,7 @@
                 </option>
                 <option>
                     <name>OGUseCmsisDspLib</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>GRuntimeLibThreads</name>
@@ -1205,7 +1229,7 @@
                 </option>
                 <option>
                     <name>CoreVariant</name>
-                    <version>27</version>
+                    <version>28</version>
                     <state>39</state>
                 </option>
                 <option>
@@ -1228,7 +1252,7 @@
                 </option>
                 <option>
                     <name>GFPUCoreSlave2</name>
-                    <version>27</version>
+                    <version>28</version>
                     <state>39</state>
                 </option>
                 <option>
@@ -1287,7 +1311,7 @@
             <name>ICCARM</name>
             <archiveVersion>2</archiveVersion>
             <data>
-                <version>35</version>
+                <version>36</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>0</debug>
                 <option>
@@ -1387,7 +1411,7 @@
                 </option>
                 <option>
                     <name>CCLangConformance</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>CCSignedPlainChar</name>
@@ -1430,31 +1454,31 @@
                     <state>$PROJ_DIR$\..\include</state>
                     <state>$PROJ_DIR$\..\..\Common\include</state>
                     <state>$PROJ_DIR$\..\..\..\..\Shared\include</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\include</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\ble\ble_advertising</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\ble\common</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\ble\ble_services</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\ble\peer_manager</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\device</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\clock</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\common</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\config</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\delay</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\hal</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\fds</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\fstorage</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\experimental_section_vars</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\log</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\log\src</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\timer</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\util</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\softdevice\common\softdevice_handler</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\softdevice\s132\headers</state>
-                    <state>$_WHF_DATA_$\CPP_Util\DSPLib\env\nRF5_SDK\components\toolchain</state>
-                    <state>$_WHF_DATA_$\CPP_Util</state>
+                    <state>W:\CPP_Util\DSPLib\include</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\ble\ble_advertising</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\ble\common</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\ble\ble_services</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\ble\peer_manager</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\device</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\clock</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\common</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\config</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\delay</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\drivers_nrf\hal</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\fds</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\fstorage</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\experimental_section_vars</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\log</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\log\src</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\timer</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\libraries\util</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\softdevice\common\softdevice_handler</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\softdevice\s132\headers</state>
+                    <state>W:\CPP_Util\DSPLib\env\nRF5_SDK\components\toolchain</state>
+                    <state>W:\CPP_Util</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -1576,13 +1600,17 @@
                     <name>OICompilerExtraOption</name>
                     <state>1</state>
                 </option>
+                <option>
+                    <name>CCStackProtection</name>
+                    <state>0</state>
+                </option>
             </data>
         </settings>
         <settings>
             <name>AARM</name>
             <archiveVersion>2</archiveVersion>
             <data>
-                <version>10</version>
+                <version>11</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>0</debug>
                 <option>
@@ -1738,6 +1766,10 @@
                     <name>AsmNoLiteralPool</name>
                     <state>0</state>
                 </option>
+                <option>
+                    <name>PreInclude</name>
+                    <state></state>
+                </option>
             </data>
         </settings>
         <settings>
@@ -1788,15 +1820,15 @@
             <name>BUILDACTION</name>
             <archiveVersion>1</archiveVersion>
             <data>
-                <prebuild>cmd /C "del $PROJ_DIR$\..\obj\Release\chaBuildDate.*"</prebuild>
-                <postbuild></postbuild>
+                <prebuild>cmd /C "del $PROJ_DIR$\..\obj\Release\wowlBle.*"</prebuild>
+                <postbuild>ielftool --ihex $TARGET_PATH$ $TARGET_DIR$\WOWL.hex</postbuild>
             </data>
         </settings>
         <settings>
             <name>ILINK</name>
             <archiveVersion>0</archiveVersion>
             <data>
-                <version>22</version>
+                <version>23</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>0</debug>
                 <option>
@@ -2115,6 +2147,22 @@
                 <option>
                     <name>OILinkExtraOption</name>
                     <state>1</state>
+                </option>
+                <option>
+                    <name>IlinkRawBinaryFile2</name>
+                    <state></state>
+                </option>
+                <option>
+                    <name>IlinkRawBinarySymbol2</name>
+                    <state></state>
+                </option>
+                <option>
+                    <name>IlinkRawBinarySegment2</name>
+                    <state></state>
+                </option>
+                <option>
+                    <name>IlinkRawBinaryAlign2</name>
+                    <state></state>
                 </option>
             </data>
         </settings>
@@ -2262,15 +2310,6 @@
     <group>
         <name>Source</name>
         <file>
-            <name>$PROJ_DIR$\..\src\ads1120.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\ga3k3a1a.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\prt_32208551.c</name>
-        </file>
-        <file>
             <name>$PROJ_DIR$\..\src\wowlAdc.c</name>
         </file>
         <file>
@@ -2287,9 +2326,6 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\src\wowlDfu.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\src\wowlExtAdc.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\src\wowlFlash.c</name>
@@ -2327,6 +2363,9 @@
     </group>
     <group>
         <name>whfCppUtil</name>
+        <file>
+            <name>W:\CPP_Util\src\crc16.c</name>
+        </file>
         <file>
             <name>W:\CPP_Util\src\CRC32.c</name>
         </file>

@@ -33,7 +33,7 @@ void wowlBattVisit(void)
 		wowlMainClearStatus(WOWL_STATUS_CHARGING);
 	} else {
 		// We are charging.
-		wowlMainClearStatus(WOWL_STATUS_CHARGING);
+		wowlMainSetStatus(WOWL_STATUS_CHARGING);
 	}
 }
 

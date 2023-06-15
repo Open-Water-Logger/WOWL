@@ -12,7 +12,7 @@
 #include "ms5837-30ba.h"
 
 #include <byteswap.h>
-
+#include <nrf_gpio.h>
 #include <timer/app_timer.h>
 #include <twi_master/nrf_drv_twi.h>
 
@@ -61,6 +61,12 @@ void wowlPressInit(void)
 {
 	bool ok;
 	uint8_t cmd;
+	
+	// Configure the submerge test button pin as an input with a pullup:
+	nrf_gpio_cfg_input(
+			PIN_SUBMERGE_TEST,
+			NRF_GPIO_PIN_PULLUP
+	);	
 	
 	// Reset the pressure sensor:
 	cmd = MS5837_CMD_RESET;
@@ -331,12 +337,15 @@ static void convertAndSubmit(uint32_t rawP, uint32_t rawT)
 		TEMP2 = (float) (TEMP - Ti) * 0.01f,
 		P2 = (float) ((((int64_t) rawP * SENS2 >> 21) - OFF2) >> 13) * 0.1f;
 		
+	// Add a pressure offset to simulate submersion, if the button is
+	//  depressed.
+	const float offset = nrf_gpio_pin_read(PIN_SUBMERGE_TEST)
+			? 0.0f    // pulled up, no offset
+			: 10e3f;  // pulled down, 10 bar offset
+		
 	// Submit, adding user-test offset.
-	wowlSampleSubmit(SI_PRESS_TEMP_C, TEMP2);
-	wowlSampleSubmit(
-			SI_PRESS_MBAR,
-			P2 + (float) wowlServiceGetPressureOffset()
-	);
+	wowlSampleSubmitSurface(SS_PRESS_TEMP_C, TEMP2);
+	wowlSampleSubmitSubmerged(SI_PRESS_MBAR, P2 + offset);
 }
 
 // CRC of 8 values, the last which must be forced to zero.  If correct,

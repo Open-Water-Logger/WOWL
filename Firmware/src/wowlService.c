@@ -48,17 +48,14 @@ static uint16_t hService;
 
 /////  Characteristic Values  /////
 static uint8_t
-#if DO_SUBMERSION_TEST
-	pressureOffsetValue,
-#endif
 	commandValue;
 static uint16_t
 	recordCountValue;
 static RECORD_DWNLD_REQ
 	recordDwnldReqValue;
-static SAMPLE 
+static SURFACE_SAMPLE 
 	measResultsValue;
-static RECORD_ENTRY
+static RECORD_BLOCK
 	recordDwnldDataValue;
 static REPROGRAM
 	reprogramValue;
@@ -68,9 +65,6 @@ static uint32_t
 
 /////  Characteristic Handles  /////
 static ble_gatts_char_handles_t
-#if DO_SUBMERSION_TEST
-	pressureOffsetChar,
-#endif
 	recordCountChar,
 	hMeasResultsChar,
 	recordDwnldReqChar,
@@ -82,15 +76,6 @@ static ble_gatts_char_handles_t
 /////  Characteristic Definitions  /////
 static const char_def_t CHAR_DEFS[] = {
 	{
-#if DO_SUBMERSION_TEST
-		WOWL_PRESS_OFFSET_UUID,                 // uuid
-		sizeof(pressureOffsetValue),            // initialLen 
-		sizeof(pressureOffsetValue),            // maxLen	
-		&pressureOffsetValue,                   // uint8_t *pValue
-		&pressureOffsetChar,                    // pHandle
-		false                                   // bool readOnly
-	}, 	{
-#endif
 		WOWL_RECORD_COUNT_UUID,                 // uuid
 		sizeof(recordCountValue),               // initialLen 
 		sizeof(recordCountValue),               // maxLen	
@@ -192,15 +177,6 @@ const REPROGRAM* wowlServiceGetDfuSetup(void) { return &reprogramValue; }
 const RECORD_DWNLD_REQ* wowlServiceGetDownloadReq(void) 
 { return &recordDwnldReqValue; }
 
-uint8_t wowlServiceGetPressureOffset(void) 
-{
-#if DO_SUBMERSION_TEST
-	return pressureOffsetValue;
-#else
-	return 0u;
-#endif
-}
-
 void wowlServiceSetRecordCount(uint16_t nRec)
 {
 	recordCountValue = nRec;
@@ -209,21 +185,41 @@ void wowlServiceSetRecordCount(uint16_t nRec)
 bool wowlServiceTransmitRecord(
 		uint16_t iRec, uint16_t recState, const SAMPLE* pSamp)
 {
-	// Cache locally:
-	recordDwnldDataValue.iRec = iRec;
-	recordDwnldDataValue.recState = recState;
-	recordDwnldDataValue.s = *pSamp;
+	bool ok;
 	
-	// Notify host of change:
-	return wowlBleSendNotification(
-			recordDwnldDataChar.value_handle,
-			&recordDwnldDataValue,
-			sizeof(recordDwnldDataValue)
-	);
+	// Cache locally:
+	const uint16_t iEntry = iRec % _countof(recordDwnldDataValue.entries);
+	recordDwnldDataValue.entries[iEntry].iRecInvalid 
+			= iRec & 0x7F | (recState ? 0x80 : 0x00);
+	recordDwnldDataValue.entries[iEntry].s = *pSamp;
+	
+	if (iEntry == _countof(recordDwnldDataValue.entries) - 1u 
+			|| iRec == recordDwnldReqValue.count - 1u) {
+		// Zero any unfilled records:
+		for (
+				uint16_t iZero = iEntry+1u;
+				iZero < _countof(recordDwnldDataValue.entries);
+				++iZero) {
+			recordDwnldDataValue.entries[iZero].iRecInvalid = 0x80;
+			recordDwnldDataValue.entries[iZero].s.packed = 0u;
+		}
+				
+		// Notify host of change:
+		ok = wowlBleSendNotification(
+				recordDwnldDataChar.value_handle,
+				&recordDwnldDataValue,
+				sizeof(recordDwnldDataValue)
+		);
+	} else {
+		// Continue to cache records.
+		ok = true;
+	}
+	
+	return ok;
 }
 
 // Signal the host with the updated measurements.
-void wowlServiceTransmitResults(const SAMPLE *pResults)
+void wowlServiceTransmitResults(const SURFACE_SAMPLE *pResults)
 {
 	// Cache locally:
 	measResultsValue = *pResults;

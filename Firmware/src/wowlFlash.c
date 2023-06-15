@@ -8,11 +8,12 @@
 
 #include "wowl.h"
 
-#include <crc.h>
 #include <arm/spi_flash_nrf.h>
 
 //********************************  Constants  *******************************//
-#define MX25V1635F_PROD_ID                                      0x001523C2u
+// The datasheet specifies xx23xx, but we consistently get xx28xx.
+//#define MX25V1635F_PROD_ID                                      0x001523C2u
+#define MX25V1635F_PROD_ID                                      0x001528C2u
 
 // The Macronix MX25V1635F is a 16 Mbit device.
 #define MX25V1635F_SIZE_BITS                          (16u * 1024u * 1024u)
@@ -54,7 +55,7 @@ static read_err_t readRecord(uint32_t iRec, SAMPLE *pS);
 void wowlFlashInit(void)
 {
 	static const spi_flash_nrf_init_t init = {
-		.spiInstance = 2u,
+		.spiInstance = 0u,
 		.clk = PIN_MEM_SCLK,
 		.miso = PIN_MEM_SDO,
 		.mosi = PIN_MEM_SDI,
@@ -72,13 +73,13 @@ void wowlFlashInit(void)
 		wowlMainSetStatus(WOWL_STATUS_FLASH_FAIL);
 	} else {
 		// Device ok.
+	
+		// Count the number of records that are available.
+		nRecords = countRecords();
+		
+		// Notify the service of this count.
+		wowlServiceSetRecordCount(nRecords);
 	}
-	
-	// Count the number of records that are available.
-	nRecords = countRecords();
-	
-	// Notify the service of this count.
-	wowlServiceSetRecordCount(nRecords);
 }
 
 void wowlFlashVisit(void)
@@ -100,9 +101,9 @@ void wowlFlashVisit(void)
 			case STATE_UNDER_WRITE: {
 				// Begin the write.
 				const int err = spiFlashWrite(
-						nRecords * sizeof(SAMPLE),
-						wowlSampleGet(),
-						sizeof(SAMPLE)
+						nRecords * sizeof(SAMPLE), // address
+						wowlSampleGet(),           // pointer to data
+						sizeof(SAMPLE)             // n bytes to write
 				);
 				
 				if (err) {
@@ -180,7 +181,13 @@ void wowlFlashVisit(void)
 		break;
 		
 		case FS_DOWNLOAD:
-		if (!wowlBleTxBusy()) {			
+		if ((wowlMainGetStatus() & WOWL_STATUS_CONNECTED) == 0u) {
+			// No longer connected.  Abort the download.
+			// Signal the state machine:
+			wowlSmSetEvent(EVENT_DOWNLOAD_DONE);
+			// Return to ready.
+			flashState = FS_READY;
+		} else if (!wowlBleTxBusy()) {			
 			const RECORD_DWNLD_REQ* pReq = wowlServiceGetDownloadReq();
 			SAMPLE samp;
 			// Read the next record:
@@ -208,10 +215,11 @@ void wowlFlashVisit(void)
 				}
 			} else {
 				// The transmission did not complete.  Retry next iteration.
-				assert(false);
 			}
-		} // end case FS_DOWNLOAD
-		break;
+		} else {
+			// The transmitter is busy.  Wait.
+		}
+		break; // end case FS_DOWNLOAD
 		
 		case FS_POWERED_DOWN:
 		if (state != STATE_UNDER_SLEEP && state != STATE_LIMP) {
@@ -259,20 +267,14 @@ static read_err_t readRecord(uint32_t iRec, SAMPLE *pS)
 	if (flashErr) {
 		result = READ_ERR_DEVICE;
 	} else {
-		if (pS->crc == UINT32_MAX) {
-			// This record has not been written.
+		if (pS->packed == UINT32_MAX) {
+			// Although possible that all packed sample fields would come out to
+			//  all ones, this is incredibly unlikely.  Much more likely is that
+			//  the record is raw Flash bits that have not been written, as they
+			//  erase to all ones.
 			result = READ_ERR_UNWRITTEN;
 		} else {
-			// Compute the CRC, excluding the CRC field.
-			const uint32_t crc = crc32(
-					(const uint8_t *) pS,
-					sizeof(SAMPLE) - sizeof(pS->crc)
-			);
-			if (crc == pS->crc) {
-				result = READ_ERR_NONE;
-			} else {
-				result = READ_ERR_CRC;
-			}
+			result = READ_ERR_NONE;
 		}
 	}
 	

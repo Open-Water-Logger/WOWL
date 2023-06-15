@@ -11,7 +11,7 @@
 //********************************  Constants  *******************************//
 
 //*******************************  Module Data  ******************************//
-static uint32_t 
+static uint16_t 
 	status = 0u;
 	
 //***********************  Local Function Declarations  **********************//
@@ -48,12 +48,12 @@ void main(void)
 	}
 }
 
-uint32_t wowlMainGetStatus(void) { return status; }
-void wowlMainClearStatus(uint32_t toClear)
+uint16_t wowlMainGetStatus(void) { return status; }
+void wowlMainClearStatus(uint16_t toClear)
 {
 	status &= ~toClear; 
 }
-void wowlMainSetStatus(uint32_t toSet) 
+void wowlMainSetStatus(uint16_t toSet) 
 {
 	status |= toSet;
 }

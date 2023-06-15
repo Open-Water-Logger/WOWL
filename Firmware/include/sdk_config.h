@@ -959,7 +959,7 @@
 // <e> SPIS_ENABLED - nrf_drv_spis - SPI Slave driver
 //==========================================================
 #ifndef SPIS_ENABLED
-#define SPIS_ENABLED                                                      1
+#define SPIS_ENABLED                                                      0
 #endif
 #if  SPIS_ENABLED
 
@@ -1013,7 +1013,7 @@
 
 // <q> SPIS0_ENABLED  - Enable SPIS0 instance
 #ifndef SPIS0_ENABLED
-#define SPIS0_ENABLED                                                     1
+#define SPIS0_ENABLED                                                     0
 #endif
 
 // <q> SPIS1_ENABLED  - Enable SPIS1 instance
@@ -1132,7 +1132,7 @@
 // <e> SPI1_ENABLED - Enable SPI1 instance
 //==========================================================
 #ifndef SPI1_ENABLED
-#define SPI1_ENABLED 0
+#define SPI1_ENABLED                                                      0
 #endif
 
 // <q> SPI1_USE_EASY_DMA  - Use EasyDMA
@@ -1144,19 +1144,15 @@
 // <e> SPI2_ENABLED - Enable SPI2 instance
 //==========================================================
 #ifndef SPI2_ENABLED
-#define SPI2_ENABLED 1
+#define SPI2_ENABLED                                                      0
 #endif
 
-#if  SPI2_ENABLED
 // <q> SPI2_USE_EASY_DMA  - Use EasyDMA
 // We don't use easy-dma, because the data must lie in RAM to use DMA, and
 //   ours may lie in FLASH, and because we are blocking anyway.
 #ifndef SPI2_USE_EASY_DMA
 #define SPI2_USE_EASY_DMA 0
 #endif
-
-#endif //SPI2_ENABLED
-// </e>
 
 #endif //SPI_ENABLED
 // </e>

@@ -68,10 +68,10 @@
 
 
 // Minimum acceptable connection interval.  Between 7.5 and 4000 msec.
-#define MIN_CONN_INTERVAL_MSEC                                        100.0
+#define MIN_CONN_INTERVAL_MSEC                                         15.0
 
-// Maximum acceptable connection interval
-#define MAX_CONN_INTERVAL_MSEC				                         1000.0
+// Maximum acceptable connection interval.  Set low to permit rapid DFU.
+#define MAX_CONN_INTERVAL_MSEC				                           15.0
 
 
 #define SLAVE_LATENCY													  0
@@ -149,7 +149,7 @@ static ble_uuid_t m_adv_uuids[] = {
 static uint8_t writeBuffer[1024];
 
 // Number of packets currently pending transmission: 
-static uint8_t nTxPending;
+static uint32_t nTxPending;
 
 //***********************  Local Function Declarations	**********************//
 
